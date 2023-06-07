@@ -1,11 +1,9 @@
-# django.shortcuts 에서 html을 보여주거나, url을 띄워주는 함수 import
-# from django.shortcuts import redirect, render
 # DRF 에 필요한 함수, 클래스 호출
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status, permissions
+from rest_framework import status
 # serializers 호출
 from user.serializers import (
     UserSerializer, CustomTokenObtainPairSerializer, UserProfileSerializer, UserDelSerializer
@@ -18,11 +16,17 @@ from user.models import User
 # from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 
-# Create your views here.
+# 내용 : JWTTOKEN으로 로그인
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
+
+# 내용 : 회원 탈퇴시, is_active값만 체크해준다.
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class SignupView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -35,8 +39,12 @@ class SignupView(APIView):
             return Response({"message": f"${serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ====================== 프로필 상세보기 ================================
+# 내용 : 프로필 상세보기, 프로필 수정, 회원 탈퇴
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class ProfileView(APIView):
+
+    # 이 함수를 실행하면, get_object_or_404가 된다.
     def get_object(self, user_id):
         return get_object_or_404(User, id=user_id)
 
@@ -54,11 +62,11 @@ class ProfileView(APIView):
                 user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
+                return Response({"message": "프로필 수정이 완료되었습니다!"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "권한이 없습니다. 내 프로필만 수정 가능해요."}, status=status.HTTP_403_FORBIDDEN)
     # 이미지 업로드, 교체 가능, 삭제는 없음.
 
     # 회원 탈퇴 (비밀번호 받아서)
@@ -72,48 +80,10 @@ class ProfileView(APIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response(
-                    {"message": "계정 비활성화 완료"}, status=status.HTTP_204_NO_CONTENT
+                    {"message": "계정이 비활성화 되었습니다"}, status=status.HTTP_204_NO_CONTENT
                 )
         else:
             return Response(
-                {"message": f"패스워드가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST
+                {"message": f"비밀번호가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
-# ================================ 프로필 페이지 끝 ================================
-
-
-# ========================== 팔로우 시작 =====================================
-class FollowView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    # 팔로우/팔로워 리스트
-    def get(self, request, user_id):
-        follow = User.objects.filter(id=user_id)
-        follow_serializer = FollowSerializer(follow, many=True)
-        request_follow = User.objects.filter(id=request.user.id)
-        request_follow_serializer = FollowSerializer(request_follow, many=True)
-        return Response(
-            {
-                "follow": follow_serializer.data,
-                "request_follow": request_follow_serializer.data,
-            }
-        )
-    # 팔로우 등록/취소
-    def post(self, request, user_id):
-        you = get_object_or_404(User, id=user_id)
-        me = request.user
-        if me.is_authenticated:
-            if you != request.user:
-                if me in you.followers.all():
-                    you.followers.remove(me)
-                    return Response("unfollow했습니다.", status=status.HTTP_200_OK)
-                else:
-                    you.followers.add(me)
-                    return Response("follow했습니다.", status=status.HTTP_200_OK)
-            else:
-                return Response("자신을 팔로우 할 수 없습니다.", status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response("로그인이 필요합니다.", status=status.HTTP_403_FORBIDDEN)
-
-# 로그인 한 유저만 팔로우 할 수 있게 수정함.
-# ================================= 팔로우 끝 =================================

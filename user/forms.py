@@ -4,7 +4,10 @@ from .models import User
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 
-
+# 작성자 : 김성우
+# 내용 : 유저 생성 폼
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
@@ -34,7 +37,10 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
-
+# 작성자 : 김성우
+# 내용 : 유저 수정 폼
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class UserChangeForm(forms.ModelForm):
     """A form for updating users. Includes all the fields on
     the user, but replaces the password field with admin's

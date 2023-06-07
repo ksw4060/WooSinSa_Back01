@@ -4,6 +4,10 @@ from django.contrib.auth.models import AbstractUser
 
 
 
+# 작성자 : 김성우
+# 내용 : 유저 및 슈퍼유저를 생성할 때 매니저
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class UserManager(BaseUserManager):
     # 유저를 생성하는 함수
     def create_user(self, email, account, username, password=None):
@@ -41,6 +45,11 @@ class UserManager(BaseUserManager):
         return user
 
 
+
+# 작성자 : 김성우
+# 내용 : 유저 모델
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class User(AbstractUser):
     # 메타 클래스는, DB 정보들에 대한 정보를 입력하는 곳
     class Meta:
@@ -67,9 +76,7 @@ class User(AbstractUser):
         # default='default/die1_1.png',  # default 이미지
         blank=True,
     )
-    followings = models.ManyToManyField(
-        "self", symmetrical=False, related_name='followers', blank=True)
-        # symmetrical 대칭 여부 False, 팔로우와 팔로워가 필요충분은 아님
+
     joined_at = models.DateField("계정 생성일", auto_now_add=True)
     is_active = models.BooleanField("활성화 여부", default=True)
     is_admin = models.BooleanField("관리자 여부", default=False)

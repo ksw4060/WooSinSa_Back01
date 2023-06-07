@@ -6,6 +6,10 @@ from django.conf import settings
 
 
 
+# 작성자 : 김성우
+# 내용 : JWT_Token에 "email, account, username"을 추가하여, 로그인할 때 쓰임
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -15,6 +19,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         return token
 
+
+# 작성자 : 김성우
+# 내용 : followings제외하고 시리얼라이저
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -36,21 +45,21 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
+# 작성자 : 김성우
+# 내용 : 유저 상세정보(프로필)
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
         fields = ("account", "username", "age",
                   "email", "profile_img", "gender",
-                  "followings","followers",
-                  "hearted_articles_count", "bookmarked_articles_count")
+                  "followings","followers",)
 
     followings = serializers.StringRelatedField(many=True)
     followers = serializers.StringRelatedField(many=True)
-    # articles_count = ArticlesSerializer  # 작성한 게시글
-    # receive_hearts_count = serializers.SerializerMethodField()  # 받은 좋아요 수
-    hearted_articles_count = serializers.SerializerMethodField()  # 내가 하트한 수
-    bookmarked_articles_count = serializers.SerializerMethodField()  # 내가 북마크한 수
 
     profile_img = serializers.ImageField(
         max_length=None,
@@ -60,12 +69,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # default='default/die1_1.png'
     )
 
-    def get_hearted_articles_count(self, obj):
-        return obj.hearts.count()
-
-    def get_bookmarked_articles_count(self, obj):
-        return obj.bookmarks.count()
-
     def clean_img(self):
         img = self.cleaned_data.get('profile_img')
         if img and img.size > 2 * 1024 * 1024:  # 2mb
@@ -73,44 +76,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return img
 
 
-# 회원탈퇴 serializer
+
+# 작성자 : 김성우
+# 내용 : 회원 탈퇴시, is_active값만 체크해준다.
+# 최초 작성일 :23년6월7일
+# 업데이트 일자 :23년6월7일
 class UserDelSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("is_active",)
 
 
-class FollowSerializer(serializers.ModelSerializer):
-    followings = serializers.SerializerMethodField()
-    followers = serializers.SerializerMethodField()
-
-    def get_followings(self, obj):
-        followings = obj.followings.all()
-        return [
-            {
-                "nickname": following.nickname,
-                "id": following.id,
-                "profile_image": self.get_profile_image_url(following.profile_img),
-            }
-            for following in followings
-        ]
-
-    def get_followers(self, obj):
-        followers = obj.followers.all()
-        return [
-            {
-                "nickname": follower.nickname,
-                "id": follower.id,
-                "profile_image": self.get_profile_image_url(follower.profile_img),
-            }
-            for follower in followers
-        ]
-
-    def get_profile_image_url(self, profile_img):
-        if profile_img:
-            return f"{settings.MEDIA_URL}{profile_img}"
-        return None
-
-    class Meta:
-        model = User
-        fields = ["followings", "followers"]
