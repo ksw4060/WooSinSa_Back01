@@ -1,13 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 
 
 
 # 작성자 : 김성우
 # 내용 : 유저 및 슈퍼유저를 생성할 때 매니저
 # 최초 작성일 :23년6월7일
-# 업데이트 일자 :23년6월7일
+# 업데이트 일자 :23년6월8일
 class UserManager(BaseUserManager):
     # 유저를 생성하는 함수
     def create_user(self, email, account, username, password=None):
@@ -15,9 +16,15 @@ class UserManager(BaseUserManager):
         Creates and saves a User with the given email, date of
         birth and password.
         """
-        if not email:
-            raise ValueError('Users must have an email address')
-        # 유저를 생성할 때, 입력해야 하는 값들 + 비밀번호는 무조건 입력해야함
+        if not password:
+            raise ValueError('사용자의 비밀번호는 필수 입력 사항 입니다.')
+        elif not account:
+            raise ValueError('사용자 계정은 필수 입력 사항 입니다.')
+        elif not username:
+            raise ValueError('사용자 이름은 필수 입력 사항 입니다.')
+        elif not email:
+            raise ValueError('사용자 이메일은 필수 입력 사항 입니다.')
+        # 유저를 생성할 때, 비밀번호, 계정, 이메일, 유저이름은 필수입니다.
         user = self.model(
             email=self.normalize_email(email),
             account=account,
@@ -56,15 +63,18 @@ class User(AbstractUser):
         db_table = "user" # DB 테이블 이름을 user 로 설정해줌
 
     email = models.EmailField(verbose_name='이메일', max_length=255, unique=True,)
+    # Email , account 는 unique 해야 한다.
+    account = models.CharField("계정이름", null=False, max_length=50, unique=True)
+    username = models.CharField("유저이름", null=False, blank=False, max_length=50)
+    age = models.PositiveIntegerField("나이", null=True)
     GENDERS = (
         ('Men', 'Men'),
         ('Women', 'Women'),
     )
-    # Email , account 는 unique 해야 한다.
-    account = models.CharField("계정이름", null=False, max_length=50, unique=True)
-    age = models.PositiveIntegerField("나이", null=True)
-    username = models.CharField("유저이름", null=False, blank=False, max_length=50)
     gender = models.CharField("성별", choices=GENDERS, max_length=10)
+    phoneNumberRegex = RegexValidator(regex = r'^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$')
+    phone_number = models.CharField("휴대폰번호", validators = [phoneNumberRegex], max_length = 11, unique = True)
+    # 핸드폰 번호 전용 필드가 있지만, CharField를 사용해서 RegexValidator를 사용하면 휴대폰번호 형식을 입력받을 수 있다.
     introduction = models.TextField("자기소개", null=True, blank=True)
     profile_img = models.ImageField(
         "프로필 이미지",

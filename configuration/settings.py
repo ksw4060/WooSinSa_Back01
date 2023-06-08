@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     # my app
     'user',
     'payment',
-    'product',
+    'shop',
 ]
 
 MIDDLEWARE = [

@@ -67,7 +67,7 @@ class ProfileView(APIView):
                 return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message": "권한이 없습니다. 내 프로필만 수정 가능해요."}, status=status.HTTP_403_FORBIDDEN)
-    # 이미지 업로드, 교체 가능, 삭제는 없음.
+        # 이미지 업로드, 교체 가능, 삭제는 없음.
 
     # 회원 탈퇴 (비밀번호 받아서)
     def delete(self, request, user_id):
@@ -75,6 +75,7 @@ class ProfileView(APIView):
         datas = request.data.copy()  # request.data → request.data.copy() 변경
         # request.data는 Django의 QueryDict 객체로서 변경이 불가능하여 복사하여 수정한 후 전달하는 방법을 이용!
         datas["is_active"] = False
+        # 회원 탈퇴 시, 계정을 비활성화 하는 것으로 설정.
         serializer = UserDelSerializer(user, data=datas)
         if user.check_password(request.data.get("password")):
             if serializer.is_valid():
@@ -84,6 +85,6 @@ class ProfileView(APIView):
                 )
         else:
             return Response(
-                {"message": f"비밀번호가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST
+                {"message": "비밀번호가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
