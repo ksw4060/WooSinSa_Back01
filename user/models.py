@@ -10,42 +10,41 @@ from django.core.validators import RegexValidator
 # 최초 작성일 :23년6월7일
 # 업데이트 일자 :23년6월8일
 class UserManager(BaseUserManager):
-    # 유저를 생성하는 함수
-    def create_user(self, email, account, username, password=None):
+
+    def create_user(self, email, account, phone, password=None, **extra_fields):
         """
         Creates and saves a User with the given email, date of
         birth and password.
         """
-        if not password:
-            raise ValueError('사용자의 비밀번호는 필수 입력 사항 입니다.')
-        elif not account:
+
+        if not account:
             raise ValueError('사용자 계정은 필수 입력 사항 입니다.')
-        elif not username:
-            raise ValueError('사용자 이름은 필수 입력 사항 입니다.')
+        elif not phone:
+            raise ValueError('휴대폰 번호는 필수 입력 사항 입니다.')
         elif not email:
             raise ValueError('사용자 이메일은 필수 입력 사항 입니다.')
-        # 유저를 생성할 때, 비밀번호, 계정, 이메일, 유저이름은 필수입니다.
+
         user = self.model(
             email=self.normalize_email(email),
             account=account,
-            username=username,
+            phone=phone,
+            **extra_fields
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
-    # 슈퍼 유저를 생성하는 함수. python3 manage.py createsuperuser 할때
-    def create_superuser(self, email, account, username, password=None):
+
+    def create_superuser(self, account,  password = None, **extra_fields):
         """
         Creates and saves a superuser with the given email, date of
         birth and password.
         """
-        # 슈퍼 유저를 생성할 때, 입력해야 하는 값들 + 비밀번호는 무조건 입력해야함
+
         user = self.create_user(
-            email,
-            password=password,
             account=account,
-            username=username,
+            password=password,
+            **extra_fields
         )
         user.is_admin = True # 슈퍼 유저는 관리자 권한이 있음
         user.save(using=self._db)
@@ -70,31 +69,28 @@ class User(AbstractUser):
     GENDERS = (
         ('Men', 'Men'),
         ('Women', 'Women'),
+        ('None', '선택하지않음'),
     )
     gender = models.CharField("성별", choices=GENDERS, max_length=10)
     phoneNumberRegex = RegexValidator(regex = r'^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$')
-    phone_number = models.CharField("휴대폰번호", validators = [phoneNumberRegex], max_length = 11, unique = True)
+    phone = models.CharField("휴대폰번호", validators = [phoneNumberRegex], max_length = 11, unique = True)
     # 핸드폰 번호 전용 필드가 있지만, CharField를 사용해서 RegexValidator를 사용하면 휴대폰번호 형식을 입력받을 수 있다.
-    introduction = models.TextField("자기소개", null=True, blank=True)
     profile_img = models.ImageField(
         "프로필 이미지",
         upload_to='users/%Y%m%d',
-        # height_field=None,
-        # width_field=None,
-        # max_length=None,
-        # default='static/img/die1_1.png',  # default 이미지
-        # default='default/die1_1.png',  # default 이미지
         blank=True,
     )
 
     joined_at = models.DateField("계정 생성일", auto_now_add=True)
     is_active = models.BooleanField("활성화 여부", default=True)
+    is_staff = models.BooleanField("스태프 여부", default=False)
     is_admin = models.BooleanField("관리자 여부", default=False)
+    is_certify = models.BooleanField("폰번호 인증 여부", default=False)
 
-    objects = UserManager() #쿼리셋 매니저가 UserManager임을 밝힘
-    # USERNAME_FIELD 와 REQUIRED_FIELDS는 유저를 생성할 때, 필요한 필드이기 때문에 create_user 및 create_superuser시 필드를 추가시켜 줘야 함
+    objects = UserManager()
+
     USERNAME_FIELD = 'account' # 회원가입시, 계정이름으로 가입하기 때문에, Unique=True 로 해주어야 하는 필드
-    REQUIRED_FIELDS = ['email', 'username',]
+    REQUIRED_FIELDS = ['email', 'username', "phone",]
 
 
     def __str__(self):
@@ -115,3 +111,18 @@ class User(AbstractUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+# 회원
+class UserInformation(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user")
+    introduce = models.TextField("자기소개", null=True, blank=True)
+    # 주문 목록
+    # 찜한 상품
+    # 나의 구매 후기
+    # 최근 본 상품
+    # 결제 수단
+    # 고객 센터
+    # 힐인 쿠폰
+    def __str__(self):
+        return str(self.user.username)+"의 프로필정보"
+

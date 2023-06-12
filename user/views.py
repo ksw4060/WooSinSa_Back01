@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 # serializers 호출
 from user.serializers import (
-    UserSerializer, CustomTokenObtainPairSerializer, UserProfileSerializer, UserDelSerializer
+    UserSerializer, CustomTokenObtainPairSerializer, UserProfileSerializer
     )
 from user.models import User
 

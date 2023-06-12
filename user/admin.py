@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User
+from .models import User, UserInformation
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from user.forms import UserCreationForm, UserChangeForm
 
@@ -21,10 +21,10 @@ class MyUserAdmin(BaseUserAdmin):
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
     list_display = ["id", "account", "email", "username",
-                     "age", "gender","is_active", "is_admin", "joined_at", "phone_number",]
+                     "age", "gender","is_active", "is_admin", "joined_at", "phone",]
     list_filter = ["is_active", "is_admin"]
     fieldsets = [
-        ("User Information", {"fields": ["account", "username", "age", "gender", "password", "phone_number", ]}),
+        ("User Information", {"fields": ["account", "username", "age", "gender", "password", "phone", ]}),
         ("Permissions", {"fields": ["is_active", "is_admin",]}),
     ]
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -34,7 +34,7 @@ class MyUserAdmin(BaseUserAdmin):
             None,
             {
                 "classes": ["wide"],
-                "fields": ["account", "email", "password1", "password2", "phone_number"],
+                "fields": ["account", "email", "password1", "password2", "phone"],
             },
         ),
     ]
@@ -43,3 +43,4 @@ class MyUserAdmin(BaseUserAdmin):
     filter_horizontal = []
 
 admin.site.register(User, MyUserAdmin)
+admin.site.register(UserInformation)
