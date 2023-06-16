@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
-
+from shop.models import Product
 
 
 # 작성자 : 김성우
@@ -65,7 +65,6 @@ class User(AbstractUser):
     # Email , account 는 unique 해야 한다.
     account = models.CharField("계정이름", null=False, max_length=50, unique=True)
     username = models.CharField("유저이름", null=False, blank=False, max_length=50)
-    age = models.PositiveIntegerField("나이", null=True)
     GENDERS = (
         ('Men', 'Men'),
         ('Women', 'Women'),
@@ -75,11 +74,7 @@ class User(AbstractUser):
     phoneNumberRegex = RegexValidator(regex = r'^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$')
     phone = models.CharField("휴대폰번호", validators = [phoneNumberRegex], max_length = 11, unique = True)
     # 핸드폰 번호 전용 필드가 있지만, CharField를 사용해서 RegexValidator를 사용하면 휴대폰번호 형식을 입력받을 수 있다.
-    profile_img = models.ImageField(
-        "프로필 이미지",
-        upload_to='users/%Y%m%d',
-        blank=True,
-    )
+    liked_products = models.ManyToManyField(Product, verbose_name="좋아하는 상품", blank=True)
 
     joined_at = models.DateField("계정 생성일", auto_now_add=True)
     is_active = models.BooleanField("활성화 여부", default=True)
@@ -113,16 +108,16 @@ class User(AbstractUser):
         return self.is_admin
 
 # 회원
-class UserInformation(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user")
+class MemberInfo(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="info_user")
     introduce = models.TextField("자기소개", null=True, blank=True)
-    # 주문 목록
-    # 찜한 상품
-    # 나의 구매 후기
-    # 최근 본 상품
-    # 결제 수단
-    # 고객 센터
-    # 힐인 쿠폰
+    # 주문 했던 목록 order_list
+    # 찜한 상품 like_products
+    # 나의 구매 후기 PurchaseReview에서 받아올 것
+    # 최근 본 상품 - recent_products 최근 본 게시글 읽어오기
+    # 결제 수단 - payment_methods
+    # 고객 센터 - inquery_center
+    # 힐인 쿠폰 - couponlist - 쿠폰 종류에 따라, 따로 모델링 할 필요가 있을까 ?
     def __str__(self):
         return str(self.user.username)+"의 프로필정보"
 

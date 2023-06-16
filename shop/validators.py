@@ -5,8 +5,9 @@ import os
 
 # 이미지 파일 이름 uuid형식으로 바꾸기
 def rename_imagefile_to_uuid(instance, filename):
-    now = date.today()
-    upload_to = f"article/{now.year}/{now.month}/{now.day}/{instance}"
+    now = date.today() # 오늘 날짜 불러오기
+    # 업로드 되는 장소
+    upload_to = f"product/{now.year}/{now.month}/{now.day}/{instance}"
     ext = filename.split(".")[-1]
     uuid = uuid4().hex
 

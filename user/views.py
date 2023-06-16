@@ -3,7 +3,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework.decorators import permission_classes
+from rest_framework import status, permissions
 # serializers 호출
 from user.serializers import (
     UserSerializer, CustomTokenObtainPairSerializer, UserProfileSerializer
@@ -48,13 +49,15 @@ class ProfileView(APIView):
     def get_object(self, user_id):
         return get_object_or_404(User, id=user_id)
 
-    # 프로필 상세보기, 권한이 없어도 됨.
+    # 회원 정보 프로필은, 쇼핑몰이기 때문에 자기 자신의 프로필만 볼 수 있도록 해줄 것임
+    @permission_classes([permissions.IsAuthenticated])
     def get(self, request, user_id):
         user = self.get_object(user_id)
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # 프로필 수정, 권한이 있어야함.
+    @permission_classes([permissions.IsAuthenticated])
     def patch(self, request, user_id):
         user = self.get_object(user_id)
         if user == request.user:
@@ -70,6 +73,7 @@ class ProfileView(APIView):
         # 이미지 업로드, 교체 가능, 삭제는 없음.
 
     # 회원 탈퇴 (비밀번호 받아서)
+    @permission_classes([permissions.IsAuthenticated])
     def delete(self, request, user_id):
         user = self.get_object(user_id)
         datas = request.data.copy()  # request.data → request.data.copy() 변경
