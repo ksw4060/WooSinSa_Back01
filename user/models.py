@@ -61,7 +61,7 @@ class User(AbstractUser):
     class Meta:
         db_table = "user" # DB 테이블 이름을 user 로 설정해줌
 
-    email = models.EmailField(verbose_name='이메일', max_length=255, unique=True,)
+    email = models.EmailField(verbose_name='이메일', max_length=255, unique=True)
     # Email , account 는 unique 해야 한다.
     account = models.CharField("계정이름", null=False, max_length=50, unique=True)
     username = models.CharField("유저이름", null=False, blank=False, max_length=50)
@@ -73,9 +73,17 @@ class User(AbstractUser):
     gender = models.CharField("성별", choices=GENDERS, max_length=10)
     phoneNumberRegex = RegexValidator(regex = r'^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$')
     phone = models.CharField("휴대폰번호", validators = [phoneNumberRegex], max_length = 11, unique = True)
-    # 핸드폰 번호 전용 필드가 있지만, CharField를 사용해서 RegexValidator를 사용하면 휴대폰번호 형식을 입력받을 수 있다.
+    # 핸드폰 번호 전용 필드가 있지만, CharField를 통해 RegexValidator를 사용하면 휴대폰번호 형식을 입력받을 수 있습니다.
     liked_products = models.ManyToManyField(Product, verbose_name="좋아하는 상품", blank=True)
-
+    LOGIN_TYPE = [
+        ("normal", "일반"),
+        ("google", "구글"),
+        ("kakao", "카카오"),
+        ("naver", "네이버"),
+    ]
+    login_type = models.CharField(
+        "로그인 타입", max_length=10, choices=LOGIN_TYPE, default="normal"
+    )
     joined_at = models.DateField("계정 생성일", auto_now_add=True)
     is_active = models.BooleanField("활성화 여부", default=True)
     is_staff = models.BooleanField("스태프 여부", default=False)

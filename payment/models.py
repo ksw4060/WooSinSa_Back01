@@ -4,13 +4,13 @@ from shop.models import Product
 from shop.validators import rename_imagefile_to_uuid
 
 
+class Payment(models.Model):
+    pass
+
 class Address(models.Model):
     pass
 
 class Cart(models.Model):
-    pass
-
-class Payment(models.Model):
     pass
 
 class Order(models.Model):

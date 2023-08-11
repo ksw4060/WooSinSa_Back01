@@ -175,7 +175,7 @@ class CommentDetailView(APIView):
 # POST : 좋아요 or 취소 , GET : 유저가 좋아요 한 게시글 불러오기
 # 상품모델 : Product
 # 시리얼라이저 : ProductListSerializer
-class LikeUserView(APIView):
+class ProductLikeView(APIView):
     # 로그인한 사람만 좋아요 가능
     permission_classes = [IsAuthenticated]
 

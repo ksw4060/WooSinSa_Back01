@@ -1,7 +1,6 @@
 from django.db import models
-from user.models import User
 from shop.validators import rename_imagefile_to_uuid
-
+from django.conf import settings
 
 
 # 23년 6월 12일 월요일
@@ -17,17 +16,13 @@ class Product(models.Model):
     ]
     product_type = models.CharField("상품 종류", choices=PRODUCT_TYPE, null=False, max_length=30,blank=False)
     product_name = models.CharField("상품 이름", null=False, max_length=100, unique=True)
-    product_price = models.PositiveIntegerField("상품 가격", null=False)
+    product_price = models.PositiveIntegerField("상품 가격", null=False, blank=False)
     product_info = models.TextField(verbose_name="상품 정보")
     product_registed_at = models.DateTimeField(auto_now_add=True, verbose_name="생성 시간")
     product_updated_at = models.DateTimeField(auto_now=True, verbose_name="수정 시간")
-    likes = models.ManyToManyField(
-        User, verbose_name="좋아하는 상품", symmetrical=False, related_name='like_products', blank=True
-        ) # symmetrical 대칭 여부 False, 유저->상품(O), 상품->유저(X)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name="좋아하는 상품", related_name='like_products',default=True)
     manufacturer = models.CharField("제조사", max_length=30)
-    product_img = models.ImageField(
-        upload_to=rename_imagefile_to_uuid, verbose_name="상품 이미지", blank=True, null=True
-    )
+    product_img = models.ImageField(upload_to=rename_imagefile_to_uuid, verbose_name="상품 이미지", blank=True, null=True)
 
 
 # ---------------- 좋아요 갯수 ------------------
@@ -96,7 +91,7 @@ class ProductInquery(models.Model):
         ("답변완료", "답변완료"),
         ("미완료", "미완료"),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="inquery_user")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="inquery_user")
     product_name = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="inquery_product_name"
         )

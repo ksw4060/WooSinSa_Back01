@@ -3,8 +3,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import permission_classes
-from rest_framework import status, permissions
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 # serializers 호출
 from user.serializers import (
     UserSerializer, CustomTokenObtainPairSerializer, UserProfileSerializer
@@ -23,6 +23,21 @@ from user.models import User
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+
+# 아이디 찾기
+class FindUserIDView(APIView):
+    def post(self, request):
+        account = request.data.get("account")
+        if User.objects.filter(account=account).exists():
+            user = User.objects.get(account=account)
+            if user.login_type == "normal":
+                return Response((user.username), status=status.HTTP_200_OK)
+            else:
+                return Response(("소셜로그인을 이용해주세요"), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(
+                {"error": "해당 이메일에 일치하는 회원이 없습니다!"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 # 내용 : 회원 탈퇴시, is_active값만 체크해준다.
@@ -44,20 +59,18 @@ class SignupView(APIView):
 # 최초 작성일 :23년6월7일
 # 업데이트 일자 :23년6월7일
 class ProfileView(APIView):
-
-    # 이 함수를 실행하면, get_object_or_404가 된다.
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    # 이 함수를 실행하면, get_object_or_404를 실행한다.
     def get_object(self, user_id):
         return get_object_or_404(User, id=user_id)
 
     # 회원 정보 프로필은, 쇼핑몰이기 때문에 자기 자신의 프로필만 볼 수 있도록 해줄 것임
-    @permission_classes([permissions.IsAuthenticated])
     def get(self, request, user_id):
         user = self.get_object(user_id)
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # 프로필 수정, 권한이 있어야함.
-    @permission_classes([permissions.IsAuthenticated])
     def patch(self, request, user_id):
         user = self.get_object(user_id)
         if user == request.user:
@@ -73,7 +86,6 @@ class ProfileView(APIView):
         # 이미지 업로드, 교체 가능, 삭제는 없음.
 
     # 회원 탈퇴 (비밀번호 받아서)
-    @permission_classes([permissions.IsAuthenticated])
     def delete(self, request, user_id):
         user = self.get_object(user_id)
         datas = request.data.copy()  # request.data → request.data.copy() 변경

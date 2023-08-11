@@ -14,7 +14,10 @@ urlpatterns = [
     path('product/inquery/<int:inquery_id>/', views.ProductInqueryDetailView.as_view(), name='inquery_detail'),
 
     # 상품 문의 댓글 보기, 작성하기
-    path('product/inquery/comment/', views.ProductInqueryView.as_view(), name='inquery_comment'),
+    path('product/inquery/comment/', views.CommentView.as_view(), name='inquery_comment'),
     # 상품 문의 댓글 수정, 삭제하기
-    path('product/inquery/comment/<int:comment_id>/', views.ProductInqueryDetailView.as_view(), name='inquery_comment_detail'),
+    path('product/inquery/comment/<int:comment_id>/', views.CommentDetailView.as_view(), name='inquery_comment_detail'),
+
+    # 상품 좋아요
+    path('product/<int:product_id>/likes/', views.ProductLikeView.as_view(), name='product_likes'),
 ]

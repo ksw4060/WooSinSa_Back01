@@ -5,6 +5,7 @@ colorama==0.4.6
 cssbeautifier==1.14.8
 dill==0.3.6
 Django==4.2.1
+django-cors-headers==4.1.0
 django-dotenv==1.4.2
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
